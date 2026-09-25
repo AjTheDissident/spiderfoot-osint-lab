@@ -4,17 +4,17 @@ A hands-on OSINT lab using SpiderFoot on Kali Linux to explore passive reconnais
 
 ## Overview
 
-This project documents a small hands-on OSINT lab I completed using **SpiderFoot on Kali Linux**.
+This project documents a hands-on OSINT lab I completed using **SpiderFoot on Kali Linux**.
 
-The goal was to understand how an automated OSINT tool can start with a single domain and collect and correlate publicly available information from multiple sources.
+The goal was to explore how an automated OSINT tool can start with a single domain and correlate publicly available information from multiple sources.
 
-Rather than simply running the tool, I wanted to understand what SpiderFoot was discovering, how different pieces of infrastructure were connected, and why automated findings still require analyst validation.
+Rather than simply running a scan, I wanted to examine what SpiderFoot discovered, understand how different entities were connected, and see where analyst validation becomes necessary.
 
-For this lab, I used:
+### Lab Environment
 
-- **Kali Linux**
-- **SpiderFoot 4.0.0**
-- **VirtualBox**
+- **Operating System:** Kali Linux
+- **OSINT Tool:** SpiderFoot 4.0.0
+- **Virtualization:** VirtualBox
 - **Target:** `scanme.nmap.org`
 - **Scan Type:** Passive
 
@@ -37,9 +37,7 @@ sudo apt install spiderfoot -y
 
 ## 2. Starting SpiderFoot
 
-SpiderFoot provides a web interface that can be hosted locally.
-
-I started the server using:
+I launched the local SpiderFoot web interface with:
 
 ```bash
 spiderfoot -l 127.0.0.1:5001
@@ -57,9 +55,9 @@ http://127.0.0.1:5001/
 
 ## 3. SpiderFoot Dashboard
 
-After starting the local server, I accessed the SpiderFoot web interface through Firefox.
+After starting the server, I accessed the SpiderFoot interface through Firefox.
 
-This interface is used to create scans, configure targets, select scan types, and review collected OSINT data.
+From here, scans can be created, targets configured, scan types selected, and collected OSINT data reviewed.
 
 ![SpiderFoot Dashboard](screenshots/03-spiderfoot-dashboard.png)
 
@@ -67,7 +65,7 @@ This interface is used to create scans, configure targets, select scan types, an
 
 ## 4. Configuring the Passive Scan
 
-For this lab, the target was:
+The target used for this lab was:
 
 ```text
 scanme.nmap.org
@@ -75,7 +73,7 @@ scanme.nmap.org
 
 I selected SpiderFoot's **Passive** use case.
 
-The purpose was to collect information from public and third-party sources without intentionally performing active reconnaissance against the target.
+The objective was to gather information through passive sources rather than intentionally performing active reconnaissance against the target.
 
 ![Passive Scan Configuration](screenshots/03-passive-scan.png)
 
@@ -83,9 +81,9 @@ The purpose was to collect information from public and third-party sources witho
 
 ## 5. Running the Scan
 
-Once configured, SpiderFoot began querying its available passive data sources and correlating the information it discovered.
+Once the scan was started, SpiderFoot began collecting and correlating information from its available passive sources.
 
-The scan gradually built a collection of entities and relationships associated with the starting domain.
+As the scan progressed, different entities and relationships associated with the starting domain began appearing.
 
 ![SpiderFoot Scan Running](screenshots/spiderfoot-scan-running.png)
 
@@ -97,35 +95,34 @@ The completed scan returned:
 
 - **256 total data elements**
 - **186 unique data elements**
+- **139 errors**
 
-The results included multiple types of publicly available information, such as:
+The collected data included categories such as:
 
 - Domain and internet names
 - IPv4 addresses
 - IPv6 addresses
 - Email addresses
-- DNS-related infrastructure
+- DNS-related information
 - BGP/AS information
-- Co-hosted infrastructure
-- Other related entities
+- Co-hosted sites
+- Related infrastructure
 
 ![SpiderFoot Scan Results](screenshots/04-scan-results.png)
 
-One important observation from the scan was that automated OSINT can produce a large amount of data very quickly.
+The volume of results demonstrated one of the benefits of automated OSINT: a tool can collect and correlate a significant amount of information quickly.
 
-The challenge is determining which results are actually useful and understanding why they were associated with the original target.
+However, the quantity of results does not necessarily indicate their relevance or accuracy. Individual findings still need to be examined in context.
 
 ---
 
 ## 7. Investigating Infrastructure
 
-I then explored individual results rather than relying only on the overall scan summary.
+Instead of stopping at the scan summary, I explored individual result categories.
 
 One category I examined was **Affiliate - IP Address**.
 
-SpiderFoot correlated discovered hostnames with IP addresses, including mail-related infrastructure associated with `nmap.org`.
-
-Examples observed during the scan included:
+SpiderFoot reported relationships between discovered hostnames and IP addresses. Examples from the scan included:
 
 ```text
 aspmx2.googlemail.com      → 142.250.147.26
@@ -137,7 +134,9 @@ alt2.aspmx.l.google.com    → 172.253.152.26
 
 ![Discovered IP Addresses](screenshots/06-ip-addresses.png)
 
-This demonstrated how a single starting domain can lead to additional infrastructure through DNS resolution and other public relationships.
+These results demonstrate how SpiderFoot can expand an investigation from a single starting point into additional hostnames, IP addresses, and infrastructure relationships.
+
+At this stage, these are **tool-generated findings**. Manual validation would be required before treating important relationships as confirmed intelligence.
 
 ---
 
@@ -151,7 +150,7 @@ SpiderFoot displayed:
 Comodo Secure DNS [scanme.nmap.org]
 ```
 
-The result was generated by the SpiderFoot module:
+The result was generated by the module:
 
 ```text
 sfp_comodo
@@ -159,62 +158,68 @@ sfp_comodo
 
 ![Blacklist Result](screenshots/08-blacklist-result.png)
 
-This was a useful example of why automated OSINT findings need context.
+This was a useful example of why automated findings need context.
 
-A result appearing under a blacklist-related category should **not automatically be interpreted as proof that the target is malicious**.
+A result appearing in a blacklist-related category should **not automatically be interpreted as proof that a domain is malicious**.
 
-Instead, the analyst should review the source, module, context, and ideally validate the finding independently before reaching a conclusion.
+Before drawing a conclusion, an analyst should examine the source of the finding, understand what the module is reporting, check whether the information is current, and corroborate it with additional sources where appropriate.
 
 ---
 
 ## 9. Relationship Mapping
 
-One of the most interesting SpiderFoot features in this lab was its relationship graph.
-
-The graph provides a visual representation of connections between discovered entities.
+SpiderFoot also provides a graph view for visualizing relationships between discovered entities.
 
 ![SpiderFoot Relationship Graph](screenshots/09-relationship-graph.png)
 
-Conceptually, the investigation expanded like this:
+The graph helped illustrate how quickly an investigation can expand from one starting point into multiple connected entities.
+
+Conceptually:
 
 ```text
-                    Starting Domain
-                          │
-              ┌───────────┼───────────┐
-              │           │           │
-             DNS         IPs        Mail
-              │           │           │
-              ▼           ▼           ▼
-         Nameservers   Addresses    MX Hosts
-              │           │           │
-              └───────────┼───────────┘
-                          │
-                          ▼
-                Related Infrastructure
+Starting Domain
+      │
+      ▼
+Public Data Sources
+      │
+      ▼
+Collected Entities
+      │
+      ├── Domains
+      ├── Hostnames
+      ├── IP Addresses
+      ├── Email Infrastructure
+      └── DNS / Network Data
+      │
+      ▼
+Relationship Mapping
+      │
+      ▼
+Analyst Review
 ```
 
-This helped me see how information gathered from different sources can be connected to build a broader picture of publicly visible infrastructure.
+The visualization is useful for exploring relationships, but the existence of an edge or relationship in an automated tool should still be understood and validated before drawing conclusions from it.
 
 ---
 
 ## What I Learned
 
-The biggest takeaway from this lab was:
+My biggest takeaway from this lab was:
 
 > **Automated OSINT findings are leads, not conclusions.**
 
-SpiderFoot can automate a significant amount of information gathering and correlation, but the tool does not replace analyst reasoning.
+SpiderFoot can automate a significant amount of collection and correlation, but automation does not replace analyst reasoning.
 
-A useful OSINT workflow requires understanding:
+During an OSINT investigation, I need to consider:
 
-- Where the information came from
-- Which module generated the finding
-- Why two entities were connected
-- Whether the information is current
-- Whether the relationship can be independently validated
-- Whether the finding is actually relevant to the investigation
+- Where did this information come from?
+- Which module generated the result?
+- Why are these two entities connected?
+- Is the information current?
+- Can the relationship be independently validated?
+- Is the finding actually relevant to the investigation?
 
-The lab helped me think about the difference between simply **collecting information** and actually **analyzing intelligence**.
+This lab helped reinforce the difference between **collecting information** and **producing useful intelligence**.
 
 ```text
 Collection
@@ -236,30 +241,30 @@ Useful Intelligence
 
 ## Limitations
 
-The completed scan also displayed **139 errors**.
+The completed scan reported **139 errors**.
 
 I have not yet investigated each error individually, so I am not assuming their cause.
 
-This is something I plan to examine further by reviewing SpiderFoot's module output and logs to understand which sources failed and why.
+A future step will be to review the relevant SpiderFoot output and modules to better understand which data sources failed and why.
 
-Documenting unsuccessful or incomplete collection is also important when evaluating the reliability of OSINT results.
+This is also an important part of OSINT analysis: understanding not only what data was collected, but also where collection was incomplete or unsuccessful.
 
 ---
 
 ## Next Steps
 
-To continue developing this lab, I plan to explore:
+I plan to continue the lab by:
 
-- Manual DNS validation using `dig`
-- WHOIS analysis
-- Certificate transparency data
+- Manually validating DNS relationships using `dig`
+- Exploring WHOIS data
+- Exploring certificate transparency data
 - Comparing SpiderFoot findings with another OSINT tool
 - Investigating the scan errors
 - Identifying potential false positives
-- Exporting and analyzing SpiderFoot results
-- Developing a repeatable OSINT investigation workflow
+- Exporting and analyzing collected results
+- Developing a more repeatable OSINT investigation workflow
 
-The next stage would move from automated discovery toward manual validation:
+The next stage of the project will focus more heavily on validation:
 
 ```text
 SpiderFoot Discovery
@@ -272,7 +277,7 @@ Manual Validation
         └── Additional OSINT Sources
         │
         ▼
-Corroborated Finding
+Corroborated Findings
         │
         ▼
 Analyst Assessment
