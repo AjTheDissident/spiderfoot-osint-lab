@@ -77,7 +77,7 @@ I selected SpiderFoot's **Passive** use case.
 
 The purpose was to collect information from public and third-party sources without intentionally performing active reconnaissance against the target.
 
-![Passive Scan Configuration](screenshots/04-passive-scan.png)
+![Passive Scan Configuration](screenshots/03-passive-scan.png)
 
 ---
 
@@ -87,7 +87,7 @@ Once configured, SpiderFoot began querying its available passive data sources an
 
 The scan gradually built a collection of entities and relationships associated with the starting domain.
 
-![SpiderFoot Scan Running](screenshots/05-scan-running.png)
+![SpiderFoot Scan Running](screenshots/spiderfoot-scan-running.png)
 
 ---
 
@@ -109,7 +109,7 @@ The results included multiple types of publicly available information, such as:
 - Co-hosted infrastructure
 - Other related entities
 
-![SpiderFoot Scan Results](screenshots/06-scan-results.png)
+![SpiderFoot Scan Results](screenshots/04-scan-results.png)
 
 One important observation from the scan was that automated OSINT can produce a large amount of data very quickly.
 
@@ -135,7 +135,7 @@ aspmx3.googlemail.com      → 142.251.127.27
 alt2.aspmx.l.google.com    → 172.253.152.26
 ```
 
-![Discovered IP Addresses](screenshots/07-ip-addresses.png)
+![Discovered IP Addresses](screenshots/06-ip-addresses.png)
 
 This demonstrated how a single starting domain can lead to additional infrastructure through DNS resolution and other public relationships.
 
